@@ -84,8 +84,5 @@ class ReferralCandy {
         return $apiParameters;
     }
     
-    private function generateSignature($apiParameters) {
-        
-    }
 } // ReferralCandy
 
