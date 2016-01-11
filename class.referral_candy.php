@@ -31,8 +31,61 @@ class ReferralCandy {
                 break;
             }
         }
+        
+        if (!$methodFound) {
+            throw new Exception('No such ReferralCandy API method exists!');
+        }
+        
+        $url = self::$DEFAULT_API_URL . $method . '.json';
+        
+        $apiParameters = array();
+        if (isset($args[0])) {
+            $apiParameters = $args[0];
+        }
+        
+        $apiParameters['accessID'] =  $this->access_id;
+        $apiParameters['timestamp'] = time();
+        
+        $apiParameters = $this->addSignatureTo($apiParameters);
+        
+        return self::callEndpoint($url, $verb, $apiParameters);
+        
 
         
     } // __call
+    
+    private static function callEndpoint($url, $verb, $params) {
+        
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        if (strtolower($verb) == 'get') {
+            curl_setopt($ch, CURLOPT_HTTPGET, true);
+        }
+        else {
+            curl_setopt($ch, CURLOPT_POST, true);
+        }
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
+        $chData = curl_exec($ch);
+        curl_close($ch);
+        return $chData;
+    }
+    
+    private function addSignatureTo($apiParameters) {
+        
+        $collected = array();
+        foreach($apiParameters as $key => $val) {
+            $collected[] = $key . '=' . $val;
+        }
+        asort($collected);
+        $collectedStr = implode('', $collected);
+        $collectedStr = $this->access_key . $collectedStr;
+        $apiParameters['signature'] = md5($collectedStr);
+        return $apiParameters;
+    }
+    
+    private function generateSignature($apiParameters) {
+        
+    }
 } // ReferralCandy
 
